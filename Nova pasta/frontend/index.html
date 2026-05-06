@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login OS</title>
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #f0f0f0; padding: 2rem; }
+    .box { max-width: 400px; margin: auto; background: white; padding: 2rem; border-radius: 8px; }
+    input, button { width: 100%; padding: 0.5rem; margin-top: 0.5rem; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="box" v-if="!logado">
+      <h2>Login</h2>
+      <input v-model="usuario" placeholder="Usuário" />
+      <input v-model="senha" type="password" placeholder="Senha" />
+      <button @click="login">Entrar</button>
+      <hr>
+      <h3>Alterar senha</h3>
+      <input v-model="altUsuario" placeholder="Usuário" />
+      <input v-model="novaSenha" type="password" placeholder="Nova senha" />
+      <button @click="alterarSenha">Alterar senha (palavra secreta: onlyne@123)</button>
+    </div>
+
+    <div class="box" v-if="logado">
+      <h2>Consulta de Ordem de Serviço</h2>
+      <input v-model="nordem" type="number" placeholder="Digite o nº da ordem" />
+      <button @click="buscarOrdem">Buscar</button>
+
+      <div v-if="ordem" style="margin-top: 1rem;">
+        <p><strong>Solicitante:</strong> {{ ordem.SOLICITANTE }}</p>
+        <p><strong>Endereço:</strong> {{ ordem.ENDERECO }}, {{ ordem.NUMERO }}</p>
+        <p><strong>Descrição:</strong> {{ ordem.DESCRICAO }}</p>
+        <p><strong>Defeito:</strong> {{ ordem.DEFEITO }}</p>
+
+        <input v-model="reparo" placeholder="Digite o reparo realizado" />
+        <button @click="salvarReparo">Salvar Reparo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue
+    createApp({
+      setup() {
+        const usuario = ref('')
+        const senha = ref('')
+        const altUsuario = ref('')
+        const novaSenha = ref('')
+        const logado = ref(false)
+        const nordem = ref('')
+        const ordem = ref(null)
+        const reparo = ref('')
+
+        const login = async () => {
+          try {
+            const res = await axios.post('http://localhost/login.php', {
+              usuario: usuario.value,
+              senha: senha.value
+            })
+            if (res.data.success) {
+              logado.value = true
+            } else {
+              alert('Usuário ou senha inválidos')
+            }
+          } catch (e) {
+            alert('Erro ao fazer login')
+          }
+        }
+
+        const alterarSenha = async () => {
+          try {
+            const res = await axios.post('http://localhost/alterar_senha.php', {
+              usuario: altUsuario.value,
+              nova_senha: novaSenha.value,
+              palavra_secreta: "onlyne@123"
+            })
+            alert(res.data.message)
+          } catch (e) {
+            alert('Erro ao alterar senha')
+          }
+        }
+
+        const buscarOrdem = async () => {
+          try {
+            const res = await axios.get(`http://localhost/ordem.php?nordem=${nordem.value}`)
+            ordem.value = res.data
+            reparo.value = ''
+          } catch (e) {
+            alert('Erro ao buscar ordem')
+          }
+        }
+
+        const salvarReparo = async () => {
+          try {
+            await axios.post('http://localhost/update_reparo.php', {
+              nordem: nordem.value,
+              reparo: reparo.value
+            })
+            alert('Reparo salvo')
+          } catch (e) {
+            alert('Erro ao salvar reparo')
+          }
+        }
+
+        return {
+          usuario, senha, altUsuario, novaSenha,
+          login, alterarSenha, logado,
+          nordem, ordem, reparo, buscarOrdem, salvarReparo
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>

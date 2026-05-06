@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alterar Senha</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-md p-6 rounded max-w-md w-full">
+    <h1 class="text-xl font-bold mb-4 text-center">Alterar Senha</h1>
+
+    <input id="usuario" type="text" placeholder="Usuário" class="w-full p-2 border rounded mb-3" />
+    <input id="novaSenha" type="password" placeholder="Nova senha" class="w-full p-2 border rounded mb-3" />
+    <input id="confirmaSenha" type="password" placeholder="Confirme a nova senha" class="w-full p-2 border rounded mb-3" />
+    <input id="secreta" type="password" placeholder="Palavra secreta" class="w-full p-2 border rounded mb-3" />
+
+    <button onclick="alterarSenha()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded">
+      Alterar Senha
+    </button>
+
+    <p id="mensagem" class="text-center text-sm mt-4 text-gray-700"></p>
+  </div>
+
+  <script>
+    async function alterarSenha() {
+      const usuario = document.getElementById('usuario').value.trim();
+      const novaSenha = document.getElementById('novaSenha').value;
+      const confirmaSenha = document.getElementById('confirmaSenha').value;
+      const secreta = document.getElementById('secreta').value;
+      const msg = document.getElementById('mensagem');
+
+      msg.textContent = '';
+
+      if (!usuario || !novaSenha || !confirmaSenha || !secreta) {
+        msg.textContent = 'Preencha todos os campos.';
+        return;
+      }
+
+      if (novaSenha !== confirmaSenha) {
+        msg.textContent = 'As senhas não coincidem.';
+        return;
+      }
+
+      try {
+        const res = await axios.post('https://conexao.novaonlyne.com.br:31405/api/alterar_senha.php', {
+          usuario,
+          nova_senha: novaSenha,
+          palavra_secreta: secreta
+        });
+
+        msg.textContent = res.data.message || 'Senha alterada com sucesso!';
+      } catch (err) {
+        msg.textContent = 'Erro ao alterar a senha.';
+      }
+    }
+  </script>
+</body>
+</html>
